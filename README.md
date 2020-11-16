@@ -18,7 +18,7 @@ Also the developer might want to check environment dependencies:
 
 # Start the service
 
-* cd uploadsite
-* python manage.py makemigrations
-* python manage.py migrate
-* python manage.py runserver
+        $ cd uploadsite
+        $ python manage.py makemigrations
+        $ python manage.py migrate
+        $ python manage.py runserver
