@@ -13,13 +13,39 @@ import os
 import uuid
 import datetime
 
-ZIP_FILENAME = 'result_1.zip'
+
 class FileUploadView(viewsets.ModelViewSet):
     queryset = File.objects.all().order_by('uploaded_at')
     serializer_class = FileSerializer
     parser_classes = (MultiPartParser,)
 
+
+    def _build_queryset(self):
+        queryset = File.objects.all()
+
+        # Search by zip user uuid
+        user_uuid = self.request.GET.get('uuid', None)
+        if user_uuid is not None:
+            queryset = queryset.filter(user_uuid=user_uuid)
+
+        # Search by zip file name
+        zip_filename = self.request.GET.get('zipname', None)
+        if zip_filename is not None:
+            queryset = queryset.filter(zipname=zip_filename)
+
+        # Search by zip file name
+        file_uuid = self.request.GET.get('fuuid', None)
+        if file_uuid is not None:
+            queryset = queryset.filter(file_uuid=file_uuid)
+
+
+    def get_queryset(self):
+        if self.request.method == 'GET':
+            self._build_queryset()
+
     def put(self, request, filename=None, format=None):
+
+        zip_filename = '{}.zip'.format(uuid.uuid4())
 
         # check whether client provides files
         if not request.FILES:
@@ -36,7 +62,7 @@ class FileUploadView(viewsets.ModelViewSet):
 
         # list of filenames to store into db
         file_paths = []
-        with zipfile.ZipFile(ZIP_FILENAME, 'w') as myzip:
+        with zipfile.ZipFile(zip_filename, 'w') as myzip:
 
             for ix in range(1, 11):
                 file_header = 'file_{}'.format(ix)
@@ -58,11 +84,11 @@ class FileUploadView(viewsets.ModelViewSet):
                 name=filename,
                 created_at=datetime.datetime.now().timestamp(),
                 uploaded_at=datetime.datetime.now().timestamp(),
-                zipname=ZIP_FILENAME,
+                zipname=zip_filename,
                 user_uuid=user_uuid)
 
-        response =  HttpResponse(open(ZIP_FILENAME, 'rb'),
+        response =  HttpResponse(open(zip_filename, 'rb'),
             status=204,
             content_type='application/force-download')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % ZIP_FILENAME
+        response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
         return response
