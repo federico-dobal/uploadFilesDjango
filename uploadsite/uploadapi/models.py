@@ -10,4 +10,5 @@ class File(models.Model):
     user_uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
 
     def __str__(self):
-        return self.name
+        return '{}-{}-{}-{}-{}-{}'.format(self.file_uuid, self.name, self.created_at,
+            self.uploaded_at, self.zipname, self.user_uuid)

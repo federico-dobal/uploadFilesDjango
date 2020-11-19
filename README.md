@@ -1,9 +1,10 @@
-# uploadFilesDjango
-Simple upload files API. It supports following functionality:
+# Upload files using Django
+
+Simple API to upload files. It supports following functionality:
 
 * Upload up to 10 files, zip them, store the metadata in DB and return the zipped content to the client.
 * Query the uploaded files metadata:
-* * Retrieve all the uploaded files by user
+  * Retrieve all the uploaded files by user uuid, zipfile name and file uuid
 
 # Environment setup
 
@@ -24,14 +25,15 @@ Also the developer might want to check environment dependencies:
         $ python manage.py runserver
 
 # DB restore
-DB can be rollbacked to the initial state, empty by executing following commands(TODO: automate it with an script):
+DB can be rollbacked to the initial state, empty by executing following script from bin directory and to execute the DB migrations:
 
-        $ find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
-        $ find . -path "*/migrations/*.pyc"  -delete
-        $ rm db.sqlite3
+        $ ./bin/resetDatabase.sh
         $ python manage.py makemigrations
         $ python manage.py migrate
 
+# Test execution
+In order to execute the tests is required the following command:
+        $ python manage.py test
 
 
 # Queries of example:
