@@ -33,6 +33,7 @@ DB can be rollbacked to the initial state, empty by executing following script f
 
 # Test execution
 In order to execute the tests is required the following command:
+
         $ python manage.py test
 
 
