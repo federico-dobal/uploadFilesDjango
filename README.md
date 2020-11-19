@@ -3,7 +3,7 @@ Simple upload files API. It supports following functionality:
 
 * Upload up to 10 files, zip them, store the metadata in DB and return the zipped content to the client.
 * Query the uploaded files metadata:
-** Retrieve all the uploaded files by user
+* * Retrieve all the uploaded files by user
 
 # Environment setup
 

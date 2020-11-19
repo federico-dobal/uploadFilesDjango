@@ -1,8 +1,9 @@
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.core.exceptions import ValidationError
 from django.shortcuts import render
 
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FileUploadParser
-from django.http import HttpResponse, HttpResponseBadRequest
 
 from .models import File
 from .serializers import FileSerializer
@@ -14,7 +15,18 @@ import uuid
 import datetime
 
 
+def insertFileRecords(file_paths, zip_filename, user_uuid):
+    for filename in file_paths:
+        File.objects.create(file_uuid=uuid.uuid4(),
+            name=filename,
+            created_at=datetime.datetime.now().timestamp(),
+            uploaded_at=datetime.datetime.now().timestamp(),
+            zipname=zip_filename,
+            user_uuid=user_uuid)
+
+
 class FileUploadView(viewsets.ModelViewSet):
+
     queryset = File.objects.all().order_by('uploaded_at')
     serializer_class = FileSerializer
     parser_classes = (MultiPartParser,)
@@ -39,13 +51,41 @@ class FileUploadView(viewsets.ModelViewSet):
             queryset = queryset.filter(file_uuid=file_uuid)
         return queryset
 
+
     def get_queryset(self):
         if self.request.method == 'GET':
             return self._build_queryset()
 
-    def put(self, request, filename=None, format=None):
 
+    def createZipFile(self, FILES):
+        """
+            Creates a zip file with the files provifed on the parameter.
+            Return the files names included on the zip file and the zip file name
+
+            Arguments:
+                FILES: list of files to include in the zip file
+        """
         zip_filename = '{}.zip'.format(uuid.uuid4())
+        file_paths = []
+        with zipfile.ZipFile(zip_filename, 'w') as myzip:
+
+            for ix in range(1, 11):
+                file_header = 'file_{}'.format(ix)
+                if file_header in FILES.keys():
+                    new_file, filename = tempfile.mkstemp()
+                    # store file path to import if zip creation succeeds
+                    file_paths.append(filename)
+
+                    # write and close file
+                    os.write(new_file, FILES.get(file_header).read())
+                    os.close(new_file)
+
+                    # write zipfile
+                    myzip.write(filename)
+        return file_paths, zip_filename
+
+
+    def put(self, request, filename=None, format=None):
 
         # check whether client provides files
         if not request.FILES:
@@ -60,35 +100,19 @@ class FileUploadView(viewsets.ModelViewSet):
         if not user_uuid:
             return HttpResponseBadRequest('User uuid not provided')
 
-        # list of filenames to store into db
-        file_paths = []
-        with zipfile.ZipFile(zip_filename, 'w') as myzip:
+        try:
+            # list of filenames to store into db
+            file_names, zip_filename = self.createZipFile(request.FILES)
 
-            for ix in range(1, 11):
-                file_header = 'file_{}'.format(ix)
-                if file_header in request.FILES.keys():
-                    new_file, filename = tempfile.mkstemp()
-                    # store file path to import if zip creation succeeds
-                    file_paths.append(filename)
+            # import filenames into DB
+            insertFileRecords(file_names, zip_filename, user_uuid)
 
-                    # write and close file
-                    os.write(new_file, request.FILES.get(file_header).read())
-                    os.close(new_file)
+        except ValidationError:
+            return HttpResponseServerError('Server failed to inser records')
 
-                    # write zipfile
-                    myzip.write(filename)
-
-        # import filenames into DB
-        for filename in file_paths:
-            File.objects.create(file_uuid=uuid.uuid4(),
-                name=filename,
-                created_at=datetime.datetime.now().timestamp(),
-                uploaded_at=datetime.datetime.now().timestamp(),
-                zipname=zip_filename,
-                user_uuid=user_uuid)
-
+        # if all is fine then return succesfully
         response =  HttpResponse(open(zip_filename, 'rb'),
-            status=204,
+            status=200,
             content_type='application/force-download')
         response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
         return response
