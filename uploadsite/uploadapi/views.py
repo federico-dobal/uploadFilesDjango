@@ -14,6 +14,8 @@ import os
 import uuid
 import datetime
 
+MIN_NUMBER_FILES, MAX_NUMBER_FILES = 1, 10
+
 
 def insertFileRecords(file_paths, zip_filename, user_uuid):
     for filename in file_paths:
@@ -91,9 +93,10 @@ class FileUploadView(viewsets.ModelViewSet):
         if not request.FILES:
             return HttpResponseBadRequest('File(s) not provided')
 
-        # At least 1 file should be provided and it accepts a maximum of 10 files
-        if len(request.FILES) < 1 or len(request.FILES) > 10:
-            return HttpResponseBadRequest('Incorect number of files provided. Min number is 1 and maximum number of files is 10')
+        # At least 1 file should be provided and it accepts a maximum of MIN_NUMBER_FILES files
+        if len(request.FILES) < MIN_NUMBER_FILES or len(request.FILES) > MAX_NUMBER_FILES:
+            message = 'Incorect number of files provided. Min number is {} and maximum number of files is {}'.format(MIN_NUMBER_FILES, MAX_NUMBER_FILES)
+            return HttpResponseBadRequest(message)
 
         user_uuid = request.data.get('user_uuid')
         # check whether client provides user uuid
