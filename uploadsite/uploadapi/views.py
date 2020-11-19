@@ -24,7 +24,7 @@ class FileUploadView(viewsets.ModelViewSet):
         queryset = File.objects.all()
 
         # Search by zip user uuid
-        user_uuid = self.request.GET.get('uuid', None)
+        user_uuid = self.request.GET.get('useruuid', None)
         if user_uuid is not None:
             queryset = queryset.filter(user_uuid=user_uuid)
 
@@ -37,11 +37,11 @@ class FileUploadView(viewsets.ModelViewSet):
         file_uuid = self.request.GET.get('fuuid', None)
         if file_uuid is not None:
             queryset = queryset.filter(file_uuid=file_uuid)
-
+        return queryset
 
     def get_queryset(self):
         if self.request.method == 'GET':
-            self._build_queryset()
+            return self._build_queryset()
 
     def put(self, request, filename=None, format=None):
 

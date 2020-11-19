@@ -10,4 +10,4 @@ class File(models.Model):
     user_uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
 
     def __str__(self):
-        return self.description
+        return self.name
