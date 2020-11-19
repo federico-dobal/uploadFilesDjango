@@ -32,6 +32,8 @@ DB can be rollbacked to the initial state, empty by executing following script f
         $ python manage.py migrate
 
 # Test execution
+Tests are located in uploadsite/uploadapi/tests.py.
+
 In order to execute the tests is required the following command:
 
         $ python manage.py test
