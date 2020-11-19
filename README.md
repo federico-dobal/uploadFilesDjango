@@ -53,7 +53,7 @@ DB can be rollbacked to the initial state, empty by executing following commands
 ## Post a set of Files and receive the zipped file:
 
        $ curl --location --request PUT 'http://127.0.0.1:8000/files/' \
-       --form 'file_1=@/Users/fede.dobal/remove/a.txt' \
-       --form 'file_2=@/Users/fede.dobal/remove/a.txt' \
-       --form 'file_3=@/Users/fede.dobal/remove/a.txt' \
+       --form 'file_1=@/{PATH_TO_FILE}/f1.txt' \
+       --form 'file_2=@/{PATH_TO_FILE}/f2.txt' \
+       --form 'file_3=@/{PATH_TO_FILE}/f3.txt' \
        --form 'user_uuid=5138c2e3-a8ca-46ad-93f2-aee106acb97d'
